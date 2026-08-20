@@ -279,11 +279,11 @@ func writeComposeFile(root string) error {
     image: gobcn/radius-director:latest
     user: "${RADIUS_DIRECTOR_UID}:${RADIUS_DIRECTOR_GID}"
     environment:
-      RADIUS_DIRECTOR_ASSETS: /app/assets
+      RADIUS_DIRECTOR_ASSETS: /assets
       RADIUS_DIRECTOR_RUNTIME_NETWORK: ${RADIUS_DIRECTOR_RUNTIME_NETWORK}
     volumes:
-      - ./assets/templates:/app/assets/templates
-      - ./assets/schemas:/app/assets/schemas
+      - ./assets/templates:/assets/templates
+      - ./assets/schemas:/assets/schemas
       - ./config:/config
       - ./generated:/generated
     networks:

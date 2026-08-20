@@ -338,7 +338,7 @@ It provides access to:
 ```text
 Host                         Container
 ────────────────────────────────────────────
-./assets          →         /app/assets
+./assets          →         /assets
 ./config          →         /config
 ./generated       →         /generated
 ```
@@ -649,7 +649,7 @@ The normal mapping is:
 
 | Host | Container |
 |---|---|
-| `./assets` | `/app/assets` |
+| `./assets` | `/assets` |
 | `./config` | `/config` |
 | `./generated` | `/generated` |
 
