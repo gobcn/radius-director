@@ -2,6 +2,11 @@
 services:
 {{ if .ProxySQL }}
   {{ .ProxySQL.ServiceName }}:
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "127.0.0.1:6033"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     image: proxysql/proxysql:latest
     volumes:
       - ./proxysql.cnf:/etc/proxysql.cnf:ro
@@ -21,7 +26,7 @@ services:
 {{ else if eq .DatabaseDeployment "proxysql" }}
     depends_on:
       proxysql:
-        condition: service_started
+        condition: service_healthy
 {{ end }}
     volumes:
       - ./{{ .Name }}:/opt/radius-director/tenant:ro
