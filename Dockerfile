@@ -25,6 +25,6 @@ COPY --from=build /out/radius-director /app/radius-director
 COPY templates /app/factory/templates
 COPY schemas /app/factory/schemas
 
-ENV RADIUS_DIRECTOR_ASSETS=/app/assets
+ENV RADIUS_DIRECTOR_ASSETS=/assets
 
 ENTRYPOINT ["/app/radius-director"]

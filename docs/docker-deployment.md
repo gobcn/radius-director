@@ -134,10 +134,10 @@ Once the runtime has been initialized, export the templates and schemas shipped 
 
 ```bash
 docker compose \
-  run --rm radius-director export assets
+  run --rm radius-director export assets /assets
 ```
 
-The runtime Compose file provides the configured asset location to the RADIUS Director container, so the destination does not need to be specified for the normal runtime workflow.
+The `export assets` command requires an explicit output directory. When using the normal runtime Compose configuration, `/assets` is the container path corresponding to the runtime's `assets` directory on the host.
 
 The exported assets will be placed in:
 
@@ -152,17 +152,13 @@ The export operation will not overwrite existing non-empty asset directories.
 
 This protects customized templates and schemas from accidentally being overwritten.
 
-### Exporting assets to another location
+### Exporting Assets to Another Location
 
-The `export assets` command also accepts an explicit destination:
-
-```text
-radius-director export assets <output-directory>
-```
+The destination can be any directory that is available inside the RADIUS Director container.
 
 This is useful when inspecting the assets shipped with a new RADIUS Director version without modifying the assets currently used by a deployment.
 
-For example, create a separate directory and mount it into the container:
+For example, create a separate directory on the host and mount it into the container:
 
 ```bash
 mkdir -p /opt/radius-director/new-assets
@@ -338,7 +334,7 @@ It provides access to:
 ```text
 Host                         Container
 ────────────────────────────────────────────
-./assets          →         /app/assets
+./assets          →         /assets
 ./config          →         /config
 ./generated       →         /generated
 ```
@@ -582,6 +578,9 @@ For example:
 
 ```bash
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --group-add "$(getent group docker | cut -d: -f3)" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/radius-director:/workspace \
   gobcn/radius-director:latest \
   init /workspace radius-director
@@ -649,7 +648,7 @@ The normal mapping is:
 
 | Host | Container |
 |---|---|
-| `./assets` | `/app/assets` |
+| `./assets` | `/assets` |
 | `./config` | `/config` |
 | `./generated` | `/generated` |
 
@@ -765,6 +764,9 @@ sudo chown "$USER":"$USER" /opt/radius-director
 
 # Initialize the runtime
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --group-add "$(getent group docker | cut -d: -f3)" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/radius-director:/workspace \
   gobcn/radius-director:latest \
   init /workspace radius-director
@@ -774,7 +776,7 @@ cd /opt/radius-director
 
 # Export bundled templates and schemas
 docker compose \
-  run --rm radius-director export assets
+  run --rm radius-director export assets /assets
 
 # Edit configuration
 # /opt/radius-director/config/production.yaml
