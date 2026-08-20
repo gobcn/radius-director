@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/gobcn/radius-director/internal/assets"
 	"github.com/gobcn/radius-director/internal/config"
@@ -301,9 +300,7 @@ func runExport(args []string, stdout, stderr io.Writer) int {
 
 func printExportUsage(output io.Writer) {
 	fmt.Fprintln(output, "Usage:")
-	fmt.Fprintln(output, "  radius-director export assets [output-directory]")
-	fmt.Fprintln(output)
-	fmt.Fprintln(output, "If output-directory is omitted, RADIUS_DIRECTOR_ASSETS is used.")
+	fmt.Fprintln(output, "  radius-director export assets <output-directory>")
 }
 
 func runExportAssets(args []string, stdout, stderr io.Writer) int {
@@ -312,33 +309,21 @@ func runExportAssets(args []string, stdout, stderr io.Writer) int {
 		stdout,
 		stderr,
 		assets.FactoryRoot,
-		os.Getenv("RADIUS_DIRECTOR_ASSETS"),
 	)
 }
 
-func runExportAssetsFromRoot(args []string, stdout, stderr io.Writer, sourceRoot string, configuredOutputDirectory string) int {
+func runExportAssetsFromRoot(args []string, stdout, stderr io.Writer, sourceRoot string) int {
 	if len(args) == 1 && (args[0] == "-h" || args[0] == "--help") {
 		printExportUsage(stdout)
 		return 0
 	}
 
-	if len(args) > 1 {
-		fmt.Fprintln(stderr, "export assets accepts at most one output directory")
+	if len(args) != 1 {
+		fmt.Fprintln(stderr, "export assets requires an output directory")
 		return 2
 	}
 
-	outputDirectory := configuredOutputDirectory
-	if len(args) == 1 {
-		outputDirectory = args[0]
-	}
-
-	if outputDirectory == "" {
-		fmt.Fprintln(
-			stderr,
-			"export assets requires an output directory or RADIUS_DIRECTOR_ASSETS",
-		)
-		return 2
-	}
+	outputDirectory := args[0]
 
 	if err := assets.Export(sourceRoot, outputDirectory); err != nil {
 		fmt.Fprintln(stderr, err)

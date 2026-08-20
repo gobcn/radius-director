@@ -310,7 +310,6 @@ func TestRunExportAssets(t *testing.T) {
 		&stdout,
 		&stderr,
 		sourceDirectory,
-		"",
 	); exitCode != 0 {
 		t.Fatalf(
 			"runExportAssetsFromRoot() exit code = %d, want 0; stderr = %q",
@@ -361,6 +360,66 @@ func TestRunExportAssets(t *testing.T) {
 	}
 }
 
+func TestRunExportAssetsRequiresDestination(t *testing.T) {
+	sourceDirectory := t.TempDir()
+	createTestAssets(t, sourceDirectory)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	if exitCode := runExportAssetsFromRoot(
+		nil,
+		&stdout,
+		&stderr,
+		sourceDirectory,
+	); exitCode != 2 {
+		t.Fatalf(
+			"runExportAssetsFromRoot() exit code = %d, want 2",
+			exitCode,
+		)
+	}
+
+	if !strings.Contains(
+		stderr.String(),
+		"export assets requires an output directory",
+	) {
+		t.Fatalf(
+			"stderr = %q, want missing-destination error",
+			stderr.String(),
+		)
+	}
+}
+
+func TestRunExportAssetsRequiresExactlyOneDestination(t *testing.T) {
+	sourceDirectory := t.TempDir()
+	createTestAssets(t, sourceDirectory)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	if exitCode := runExportAssetsFromRoot(
+		[]string{t.TempDir(), t.TempDir()},
+		&stdout,
+		&stderr,
+		sourceDirectory,
+	); exitCode != 2 {
+		t.Fatalf(
+			"runExportAssetsFromRoot() exit code = %d, want 2",
+			exitCode,
+		)
+	}
+
+	if !strings.Contains(
+		stderr.String(),
+		"export assets requires an output directory",
+	) {
+		t.Fatalf(
+			"stderr = %q, want missing-destination error",
+			stderr.String(),
+		)
+	}
+}
+
 func TestRunExportAssetsFromRootUsesSpecifiedFactoryLibrary(t *testing.T) {
 	factoryDirectory := t.TempDir()
 	adminDirectory := t.TempDir()
@@ -401,7 +460,6 @@ func TestRunExportAssetsFromRootUsesSpecifiedFactoryLibrary(t *testing.T) {
 		&stdout,
 		&stderr,
 		factoryDirectory,
-		"",
 	); exitCode != 0 {
 		t.Fatalf(
 			"runExportAssetsFromRoot() exit code = %d, want 0; stderr = %q",
@@ -465,7 +523,6 @@ func TestRunExportAssetsRefusesExistingAssets(t *testing.T) {
 		&stdout,
 		&stderr,
 		sourceDirectory,
-		"",
 	); exitCode != 1 {
 		t.Fatalf(
 			"runExportAssetsFromRoot() exit code = %d, want 1",
@@ -516,7 +573,6 @@ func TestRunExportAssetsExplicitDirectoryOverridesConfiguredDirectory(t *testing
 		&stdout,
 		&stderr,
 		sourceDirectory,
-		configuredDirectory,
 	); exitCode != 0 {
 		t.Fatalf(
 			"runExportAssetsFromRoot() exit code = %d, want 0; stderr = %q",
@@ -545,69 +601,6 @@ func TestRunExportAssetsExplicitDirectoryOverridesConfiguredDirectory(t *testing
 	}
 }
 
-func TestRunExportAssetsUsesConfiguredDirectory(t *testing.T) {
-	sourceDirectory := t.TempDir()
-	createTestAssets(t, sourceDirectory)
-
-	configuredDirectory := t.TempDir()
-
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	if exitCode := runExportAssetsFromRoot(
-		nil,
-		&stdout,
-		&stderr,
-		sourceDirectory,
-		configuredDirectory,
-	); exitCode != 0 {
-		t.Fatalf(
-			"runExportAssetsFromRoot() exit code = %d, want 0; stderr = %q",
-			exitCode,
-			stderr.String(),
-		)
-	}
-
-	if _, err := os.Stat(filepath.Join(
-		configuredDirectory,
-		"templates",
-		"default.conf",
-	)); err != nil {
-		t.Fatalf("expected export in configured directory: %v", err)
-	}
-}
-
-func TestRunExportAssetsRequiresDestinationWhenUnconfigured(t *testing.T) {
-	sourceDirectory := t.TempDir()
-	createTestAssets(t, sourceDirectory)
-
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	if exitCode := runExportAssetsFromRoot(
-		nil,
-		&stdout,
-		&stderr,
-		sourceDirectory,
-		"",
-	); exitCode != 2 {
-		t.Fatalf(
-			"runExportAssetsFromRoot() exit code = %d, want 2",
-			exitCode,
-		)
-	}
-
-	if !strings.Contains(
-		stderr.String(),
-		"requires an output directory or RADIUS_DIRECTOR_ASSETS",
-	) {
-		t.Fatalf(
-			"stderr = %q, want missing-destination error",
-			stderr.String(),
-		)
-	}
-}
-
 func TestRunExportHelp(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -625,7 +618,7 @@ func TestRunExportHelp(t *testing.T) {
 
 	if !strings.Contains(
 		stdout.String(),
-		"export assets [output-directory]",
+		"export assets <output-directory>",
 	) {
 		t.Fatalf(
 			"stdout = %q, want export assets usage",
