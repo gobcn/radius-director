@@ -22,7 +22,7 @@ No RADIUS Director executable needs to be installed on the host.
 The commands in this guide use the RADIUS Director Docker image:
 
 ```text
-gobcn/radius-director:latest
+ghcr.io/gobcn/radius-director:latest
 ```
 
 The examples in this guide assume a Linux host and use `/opt/radius-director` as the runtime directory.
@@ -88,7 +88,7 @@ docker run --rm \
   --group-add "$(getent group docker | cut -d: -f3)" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/radius-director:/workspace \
-  gobcn/radius-director:latest \
+  ghcr.io/gobcn/radius-director:latest \
   init /workspace radius-director
 ```
 
@@ -582,7 +582,7 @@ docker run --rm \
   --group-add "$(getent group docker | cut -d: -f3)" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/radius-director:/workspace \
-  gobcn/radius-director:latest \
+  ghcr.io/gobcn/radius-director:latest \
   init /workspace radius-director
 ```
 
@@ -768,7 +768,7 @@ docker run --rm \
   --group-add "$(getent group docker | cut -d: -f3)" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/radius-director:/workspace \
-  gobcn/radius-director:latest \
+  ghcr.io/gobcn/radius-director:latest \
   init /workspace radius-director
 
 # Enter the runtime directory
