@@ -276,7 +276,7 @@ func writeComposeFile(root string) error {
 
 	content := `services:
   radius-director:
-    image: gobcn/radius-director:latest
+    image: ghcr.io/gobcn/radius-director:latest
     user: "${RADIUS_DIRECTOR_UID}:${RADIUS_DIRECTOR_GID}"
     environment:
       RADIUS_DIRECTOR_ASSETS: /assets

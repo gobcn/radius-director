@@ -193,7 +193,7 @@ func TestInitializeFilesystemWritesComposeFile(t *testing.T) {
 
 	expected := []string{
 		"radius-director:",
-		"image: gobcn/radius-director:latest",
+		"image: ghcr.io/gobcn/radius-director:latest",
 		"user: \"${RADIUS_DIRECTOR_UID}:${RADIUS_DIRECTOR_GID}\"",
 		"RADIUS_DIRECTOR_ASSETS: /assets",
 		"RADIUS_DIRECTOR_RUNTIME_NETWORK: ${RADIUS_DIRECTOR_RUNTIME_NETWORK}",
