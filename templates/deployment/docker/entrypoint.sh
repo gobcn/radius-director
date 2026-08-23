@@ -78,4 +78,4 @@ done
 
 echo "RADIUS Director: starting FreeRADIUS"
 
-exec freeradius -f
+exec freeradius -fl stdout
