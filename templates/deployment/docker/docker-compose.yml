@@ -8,6 +8,8 @@ services:
       timeout: 5s
       retries: 3
     image: proxysql/proxysql:latest
+    ports:
+      - "6033:6033"
     volumes:
       - ./proxysql.cnf:/etc/proxysql.cnf:ro
 {{ if .RuntimeNetworkName }}

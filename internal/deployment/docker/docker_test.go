@@ -311,6 +311,7 @@ func TestGenerateDeploymentWithProxySQL(t *testing.T) {
 
 	expectedComposeContent := []string{
 		"proxysql:",
+		"6033:6033",
 		"radius-customer-a:",
 		"image: freeradius/freeradius-server:3.2.10",
 		"radius-customer-b:",
