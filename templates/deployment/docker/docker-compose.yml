@@ -19,6 +19,10 @@ services:
 {{ range .Tenants }}
   {{ .ServiceName }}:
     image: freeradius/freeradius-server:{{ .RadiusVersion }}
+    ports:
+      - "{{ .AuthenticationPort }}:1812/udp"
+      - "{{ .AccountingPort }}:1813/udp"
+      - "{{ .COAPort }}:3799/udp"
 {{ if eq .DatabaseDeployment "container" }}
     depends_on:
       {{ .DatabaseServiceName }}:
