@@ -3,11 +3,14 @@ services:
 {{ if .ProxySQL }}
   {{ .ProxySQL.ServiceName }}:
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "127.0.0.1:6033"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-P", "6032", "-u", "admin", "-padmin"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 10s
     image: proxysql/proxysql:latest
+    ports:
+      - "6033:6033"
     volumes:
       - ./proxysql.cnf:/etc/proxysql.cnf:ro
 {{ if .RuntimeNetworkName }}
@@ -19,6 +22,10 @@ services:
 {{ range .Tenants }}
   {{ .ServiceName }}:
     image: freeradius/freeradius-server:{{ .RadiusVersion }}
+    ports:
+      - "{{ .AuthenticationPort }}:1812/udp"
+      - "{{ .AccountingPort }}:1813/udp"
+      - "{{ .COAPort }}:3799/udp"
 {{ if eq .DatabaseDeployment "container" }}
     depends_on:
       {{ .DatabaseServiceName }}:

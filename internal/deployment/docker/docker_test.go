@@ -39,7 +39,10 @@ func TestGenerateDeployment(t *testing.T) {
 					Password: "database-password",
 				},
 				RADIUSServer: generator.RADIUSServer{
-					Version: "3.2.10",
+					Version:            "3.2.10",
+					AuthenticationPort: 11812,
+					AccountingPort:     11813,
+					COAPort:            13799,
 				},
 			},
 			{
@@ -75,6 +78,9 @@ func TestGenerateDeployment(t *testing.T) {
 	expectedComposeContent := []string{
 		"radius-customer-a:",
 		"image: freeradius/freeradius-server:3.2.10",
+		"11812:1812/udp",
+		"11813:1813/udp",
+		"13799:3799/udp",
 		"radius-customer-b:",
 		"image: freeradius/freeradius-server:3.3.0",
 
@@ -305,6 +311,7 @@ func TestGenerateDeploymentWithProxySQL(t *testing.T) {
 
 	expectedComposeContent := []string{
 		"proxysql:",
+		"6033:6033",
 		"radius-customer-a:",
 		"image: freeradius/freeradius-server:3.2.10",
 		"radius-customer-b:",
