@@ -14,13 +14,15 @@ import (
 // OpenMySQL opens and verifies a MySQL connection for one generated tenant.
 func OpenMySQL(ctx context.Context, configuration generator.SQL) (*sql.DB, error) {
 	address := net.JoinHostPort(configuration.Host, strconv.Itoa(configuration.Port))
-	connector, err := mysql.NewConnector(&mysql.Config{
-		User:   configuration.Username,
-		Passwd: configuration.Password,
-		Net:    "tcp",
-		Addr:   address,
-		DBName: configuration.Database,
-	})
+
+	config := mysql.NewConfig()
+	config.User = configuration.Username
+	config.Passwd = configuration.Password
+	config.Net = "tcp"
+	config.Addr = address
+	config.DBName = configuration.Database
+
+	connector, err := mysql.NewConnector(config)
 	if err != nil {
 		return nil, fmt.Errorf("create MySQL connector: %w", err)
 	}

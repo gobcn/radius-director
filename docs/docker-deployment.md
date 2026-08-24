@@ -17,6 +17,14 @@ Keeping these two environments separate allows RADIUS Director itself to be upgr
 
 The host should have Docker installed and be able to run Docker containers.
 
+The host should also have the `moreutils` package installed if accounting maintenance will be scheduled using the example cron configuration. The `ts` command from `moreutils` is used to add timestamps to accounting maintenance logs.
+
+On Debian-based systems:
+
+```bash
+sudo apt install moreutils
+```
+
 No RADIUS Director executable needs to be installed on the host.
 
 The commands in this guide use the RADIUS Director Docker image:
@@ -431,7 +439,7 @@ crontab -e
 Add:
 
 ```cron
-*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-a.lock docker compose run --rm radius-director maintenance accounting /config/production.yaml customer-a >> /var/log/radius-director/accounting-customer-a.log 2>&1
+*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-a.lock sh -c 'docker compose run --rm --quiet radius-director maintenance accounting /config/production.yaml customer-a 2>&1 | ts "[\%Y-\%m-\%d \%H:\%M:\%S]" >> /var/log/radius-director/accounting-customer-a.log'
 ```
 
 The command:
@@ -440,7 +448,11 @@ The command:
 - Runs the maintenance operation every five minutes.
 - Uses `flock` to prevent another accounting maintenance run from starting if the previous run is still in progress.
 - Runs the RADIUS Director accounting maintenance command in a temporary container.
+- Uses Docker Compose's `--quiet` option to suppress container lifecycle messages from the log.
+- Adds a timestamp to each line of accounting maintenance output using `ts`.
 - Appends output and errors to a log file under `/var/log/radius-director/`.
+
+The `%` characters in the `ts` timestamp format are escaped as `\%` because cron treats `%` specially in command lines.
 
 Create the log directory before enabling the scheduled job:
 
@@ -452,8 +464,8 @@ sudo chown "$USER":"$USER" /var/log/radius-director
 If multiple tenants require accounting maintenance, create a separate cron entry for each tenant. For example:
 
 ```cron
-*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-a.lock docker compose run --rm radius-director maintenance accounting /config/production.yaml customer-a >> /var/log/radius-director/accounting-customer-a.log 2>&1
-*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-b.lock docker compose run --rm radius-director maintenance accounting /config/production.yaml customer-b >> /var/log/radius-director/accounting-customer-b.log 2>&1
+*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-a.lock sh -c 'docker compose run --rm --quiet radius-director maintenance accounting /config/production.yaml customer-a 2>&1 | ts "[\%Y-\%m-\%d \%H:\%M:\%S]" >> /var/log/radius-director/accounting-customer-a.log'
+*/5 * * * * cd /opt/radius-director && /usr/bin/flock -n /tmp/radius-director-accounting-customer-b.lock sh -c 'docker compose run --rm --quiet radius-director maintenance accounting /config/production.yaml customer-b 2>&1 | ts "[\%Y-\%m-\%d \%H:\%M:\%S]" >> /var/log/radius-director/accounting-customer-b.log'
 ```
 
 The `flock` lock is per tenant, so maintenance for different tenants can run independently.
