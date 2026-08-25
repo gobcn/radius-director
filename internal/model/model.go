@@ -89,15 +89,25 @@ type RADIUSServer struct {
 
 // NASAssignment defines how a tenant uses a NAS device.
 type NASAssignment struct {
-	NASDevice         string `yaml:"nas_device"`
-	CredentialProfile string `yaml:"credential_profile"`
-	AccountingProfile string `yaml:"accounting_profile"`
-	MonitoringProfile string `yaml:"monitoring_profile"`
+	CredentialProfile           string                       `yaml:"credential_profile"`
+	AccountingProfile           string                       `yaml:"accounting_profile"`
+	MonitoringProfile           string                       `yaml:"monitoring_profile"`
+	RequireMessageAuthenticator *RequireMessageAuthenticator `yaml:"require_message_authenticator"`
 }
 
 // TrustedRADIUSClientAssignment defines how a tenant uses a trusted RADIUS
 // client.
 type TrustedRADIUSClientAssignment struct {
-	TrustedRADIUSClient string `yaml:"trusted_radius_client"`
-	CredentialProfile   string `yaml:"credential_profile"`
+	CredentialProfile           string                       `yaml:"credential_profile"`
+	RequireMessageAuthenticator *RequireMessageAuthenticator `yaml:"require_message_authenticator"`
 }
+
+// RequireMessageAuthenticator controls FreeRADIUS Message-Authenticator
+// enforcement for an inbound RADIUS client.
+type RequireMessageAuthenticator string
+
+const (
+	RequireMessageAuthenticatorAuto RequireMessageAuthenticator = "auto"
+	RequireMessageAuthenticatorYes  RequireMessageAuthenticator = "yes"
+	RequireMessageAuthenticatorNo   RequireMessageAuthenticator = "no"
+)

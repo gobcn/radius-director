@@ -17,6 +17,9 @@ global_objects:
     mt-core-01.gobcn.ca:
       ip_address: 10.10.10.1
       vendor: mikrotik
+  trusted_radius_clients:
+    sonar:
+      ip_address: 10.10.10.2
 
 tenants:
   customer-a:
@@ -37,8 +40,12 @@ tenants:
       accounting_port: 1813
       coa_port: 3799
     nas_assignments:
-      core-router:
-        nas_device: mt-core-01.gobcn.ca
+      mt-core-01.gobcn.ca:
         credential_profile: default
         accounting_profile: default
         monitoring_profile: default
+        require_message_authenticator: yes
+    trusted_radius_client_assignments:
+      sonar:
+        credential_profile: default
+        require_message_authenticator: no

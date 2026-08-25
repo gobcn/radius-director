@@ -59,9 +59,9 @@ func Generate(configuration model.Configuration) Configuration {
 			Remove:   deploymentProfile.Remove,
 		}
 
-		for _, assignmentIdentifier := range sortedKeys(tenant.NASAssignments) {
-			assignment := tenant.NASAssignments[assignmentIdentifier]
-			nasDevice := configuration.GlobalObjects.NASDevices[assignment.NASDevice]
+		for _, nasDeviceIdentifier := range sortedKeys(tenant.NASAssignments) {
+			assignment := tenant.NASAssignments[nasDeviceIdentifier]
+			nasDevice := configuration.GlobalObjects.NASDevices[nasDeviceIdentifier]
 			credentialProfile := configuration.GlobalObjects.CredentialProfiles[assignment.CredentialProfile]
 			accountingProfile := configuration.GlobalObjects.AccountingProfiles[assignment.AccountingProfile]
 
@@ -71,33 +71,37 @@ func Generate(configuration model.Configuration) Configuration {
 				staleSessionTimeout = &parsedTimeout
 			}
 
+			requireMessageAuthenticator := messageAuthenticatorValue(assignment.RequireMessageAuthenticator)
+
 			generatedTenant.FreeRADIUSClients = append(generatedTenant.FreeRADIUSClients, FreeRADIUSClient{
-				Identifier:   assignmentIdentifier,
-				IPAddress:    nasDevice.IPAddress,
-				SharedSecret: credentialProfile.SharedSecret,
-				Vendor:       nasDevice.Vendor,
+				Identifier:                  nasDeviceIdentifier,
+				IPAddress:                   nasDevice.IPAddress,
+				SharedSecret:                credentialProfile.SharedSecret,
+				Vendor:                      nasDevice.Vendor,
+				RequireMessageAuthenticator: requireMessageAuthenticator,
 			})
 			generatedTenant.HomeServers = append(generatedTenant.HomeServers, HomeServer{
-				Identifier:   assignmentIdentifier,
+				Identifier:   nasDeviceIdentifier,
 				IPAddress:    nasDevice.IPAddress,
 				SharedSecret: credentialProfile.SharedSecret,
 			})
 			generatedTenant.AccountingPolicies = append(generatedTenant.AccountingPolicies, NASAccountingPolicy{
-				NASAssignmentIdentifier: assignmentIdentifier,
-				NASDeviceIdentifier:     assignment.NASDevice,
-				IPAddress:               nasDevice.IPAddress,
-				StaleSessionTimeout:     staleSessionTimeout,
+				NASDeviceIdentifier: nasDeviceIdentifier,
+				IPAddress:           nasDevice.IPAddress,
+				StaleSessionTimeout: staleSessionTimeout,
 			})
 		}
 
-		for _, assignmentIdentifier := range sortedKeys(tenant.TrustedRADIUSClientAssignments) {
-			assignment := tenant.TrustedRADIUSClientAssignments[assignmentIdentifier]
-			trustedRADIUSClient := configuration.GlobalObjects.TrustedRADIUSClients[assignment.TrustedRADIUSClient]
+		for _, trustedRADIUSClientIdentifier := range sortedKeys(tenant.TrustedRADIUSClientAssignments) {
+			assignment := tenant.TrustedRADIUSClientAssignments[trustedRADIUSClientIdentifier]
+			trustedRADIUSClient := configuration.GlobalObjects.TrustedRADIUSClients[trustedRADIUSClientIdentifier]
 			credentialProfile := configuration.GlobalObjects.CredentialProfiles[assignment.CredentialProfile]
+			requireMessageAuthenticator := messageAuthenticatorValue(assignment.RequireMessageAuthenticator)
 			generatedTenant.FreeRADIUSClients = append(generatedTenant.FreeRADIUSClients, FreeRADIUSClient{
-				Identifier:   assignmentIdentifier,
-				IPAddress:    trustedRADIUSClient.IPAddress,
-				SharedSecret: credentialProfile.SharedSecret,
+				Identifier:                  trustedRADIUSClientIdentifier,
+				IPAddress:                   trustedRADIUSClient.IPAddress,
+				SharedSecret:                credentialProfile.SharedSecret,
+				RequireMessageAuthenticator: requireMessageAuthenticator,
 			})
 		}
 		sort.SliceStable(generatedTenant.FreeRADIUSClients, func(left, right int) bool {
@@ -108,6 +112,15 @@ func Generate(configuration model.Configuration) Configuration {
 	}
 
 	return generated
+}
+
+func messageAuthenticatorValue(value *model.RequireMessageAuthenticator) *string {
+	if value == nil {
+		return nil
+	}
+
+	configured := string(*value)
+	return &configured
 }
 
 func sortedKeys[T any](values map[string]T) []string {

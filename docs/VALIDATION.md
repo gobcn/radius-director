@@ -224,14 +224,30 @@ identifiers, not filesystem paths.
 Validation rules:
 
 - identifier must be unique
-- nas_device must be specified
 - credential_profile must be specified
 - accounting_profile must be specified
 - monitoring_profile must be specified
+- require_message_authenticator, when specified, must be `auto`, `yes`, or `no`
 - referenced NAS Device must exist
 - referenced Credential Profile must exist
 - referenced Accounting Profile must exist
 - referenced Monitoring Profile must exist
+
+The NAS Assignment identifier is the referenced NAS Device identifier.
+
+---
+
+## Trusted RADIUS Client Assignment
+
+Validation rules:
+
+- identifier must be unique
+- credential_profile must be specified
+- require_message_authenticator, when specified, must be `auto`, `yes`, or `no`
+- referenced Trusted RADIUS Client must exist
+- referenced Credential Profile must exist
+
+The Trusted RADIUS Client Assignment identifier is the referenced Trusted RADIUS Client identifier.
 
 ---
 

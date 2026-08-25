@@ -169,11 +169,11 @@ tenants:
       coa_port: 3799
 
     nas_assignments:
-      core-router:
-        nas_device: mt-core-01.gobcn.ca
+      mt-core-01.gobcn.ca:
         credential_profile: default
         accounting_profile: default
         monitoring_profile: default
+        require_message_authenticator: yes
 ```
 
 The complete example in `resources/example.yaml` should be used as the reference for the currently supported configuration structure.

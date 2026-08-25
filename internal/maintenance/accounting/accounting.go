@@ -58,13 +58,13 @@ func (r Runner) Run(ctx context.Context, policies []generator.NASAccountingPolic
 		cutoff := maintenanceTime.Add(-*policy.StaleSessionTimeout)
 		databaseResult, err := r.DB.ExecContext(ctx, closeStaleSessionsQuery, staleSessionTerminateCause, policy.IPAddress, cutoff)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("NAS assignment %q: %w", policy.NASAssignmentIdentifier, err))
+			errs = append(errs, fmt.Errorf("NAS device %q: %w", policy.NASDeviceIdentifier, err))
 			continue
 		}
 
 		rowsAffected, err := databaseResult.RowsAffected()
 		if err != nil {
-			errs = append(errs, fmt.Errorf("NAS assignment %q: determine closed session count: %w", policy.NASAssignmentIdentifier, err))
+			errs = append(errs, fmt.Errorf("NAS device %q: determine closed session count: %w", policy.NASDeviceIdentifier, err))
 			continue
 		}
 		result.SessionsClosed += rowsAffected

@@ -156,9 +156,6 @@ func validateNASAssignments(tenantIdentifier string, assignments map[string]mode
 
 func validateNASAssignment(tenantIdentifier, identifier string, assignment model.NASAssignment) []error {
 	var validationErrors []error
-	if assignment.NASDevice == "" {
-		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: nas assignment %q: nas_device must be specified", tenantIdentifier, identifier))
-	}
 	if assignment.CredentialProfile == "" {
 		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: nas assignment %q: credential_profile must be specified", tenantIdentifier, identifier))
 	}
@@ -168,6 +165,10 @@ func validateNASAssignment(tenantIdentifier, identifier string, assignment model
 	if assignment.MonitoringProfile == "" {
 		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: nas assignment %q: monitoring_profile must be specified", tenantIdentifier, identifier))
 	}
+	validationErrors = append(validationErrors, validateRequireMessageAuthenticator(
+		fmt.Sprintf("tenant %q: nas assignment %q", tenantIdentifier, identifier),
+		assignment.RequireMessageAuthenticator,
+	)...)
 
 	return validationErrors
 }
@@ -183,12 +184,31 @@ func validateTrustedRADIUSClientAssignments(tenantIdentifier string, assignments
 
 func validateTrustedRADIUSClientAssignment(tenantIdentifier, identifier string, assignment model.TrustedRADIUSClientAssignment) []error {
 	var validationErrors []error
-	if assignment.TrustedRADIUSClient == "" {
-		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: trusted radius client assignment %q: trusted_radius_client must be specified", tenantIdentifier, identifier))
-	}
 	if assignment.CredentialProfile == "" {
 		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: trusted radius client assignment %q: credential_profile must be specified", tenantIdentifier, identifier))
 	}
+	validationErrors = append(validationErrors, validateRequireMessageAuthenticator(
+		fmt.Sprintf("tenant %q: trusted radius client assignment %q", tenantIdentifier, identifier),
+		assignment.RequireMessageAuthenticator,
+	)...)
 
 	return validationErrors
+}
+
+func validateRequireMessageAuthenticator(prefix string, value *model.RequireMessageAuthenticator) []error {
+	if value == nil {
+		return nil
+	}
+
+	switch *value {
+	case model.RequireMessageAuthenticatorAuto,
+		model.RequireMessageAuthenticatorYes,
+		model.RequireMessageAuthenticatorNo:
+		return nil
+	default:
+		return []error{fmt.Errorf(
+			"%s: require_message_authenticator must be one of auto, yes, or no",
+			prefix,
+		)}
+	}
 }

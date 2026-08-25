@@ -33,10 +33,11 @@ type AuthenticationPolicy struct {
 // FreeRADIUSClient contains the information needed to render a FreeRADIUS
 // client definition.
 type FreeRADIUSClient struct {
-	Identifier   string
-	IPAddress    string
-	SharedSecret string
-	Vendor       string
+	Identifier                  string
+	IPAddress                   string
+	SharedSecret                string
+	Vendor                      string
+	RequireMessageAuthenticator *string
 }
 
 // HomeServer contains the information needed to render a FreeRADIUS home
@@ -51,10 +52,9 @@ type HomeServer struct {
 // NAS assignment. A nil StaleSessionTimeout means stale-session cleanup is
 // disabled for that assignment.
 type NASAccountingPolicy struct {
-	NASAssignmentIdentifier string
-	NASDeviceIdentifier     string
-	IPAddress               string
-	StaleSessionTimeout     *time.Duration
+	NASDeviceIdentifier string
+	IPAddress           string
+	StaleSessionTimeout *time.Duration
 }
 
 // SQL contains the information needed to render a FreeRADIUS sql module.
