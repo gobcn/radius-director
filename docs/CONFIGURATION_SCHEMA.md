@@ -257,6 +257,48 @@ For example:
 ```yaml
 nas_assignments:
 
+  mt-core-01.gobcn.ca:
+
+    credential_profile: default
+
+    accounting_profile: default
+
+    monitoring_profile: default
+
+    require_message_authenticator: yes
+
+trusted_radius_client_assignments:
+
+  sonar:
+
+    credential_profile: default
+
+    require_message_authenticator: no
+```
+
+The key of an NAS Assignment is the identifier of its referenced NAS Device. The key of a Trusted RADIUS Client Assignment is the identifier of its referenced Trusted RADIUS Client. This keeps the assignment tenant-scoped while avoiding a redundant reference property.
+
+`require_message_authenticator` is optional on either assignment type. When omitted, RADIUS Director does not generate the corresponding FreeRADIUS directive. When specified, it must be `auto`, `yes`, or `no`, and RADIUS Director generates that value.
+
+Relationship objects never duplicate configuration owned by other objects.
+
+Referenced objects must exist within the configuration.
+
+An Accounting Profile's accounting policy applies to each NAS Assignment that references it.
+
+## Migrating Assignment Identifiers
+
+NAS Assignments and Trusted RADIUS Client Assignments previously used a separate assignment identifier and reference property. The assignment key now directly identifies the referenced Global Object.
+
+Existing configurations using the previous assignment structure must be updated.
+
+### NAS Assignments
+
+Previously, an NAS Assignment used its own identifier and referenced an NAS Device using `nas_device`:
+
+```yaml
+nas_assignments:
+
   core-router:
 
     nas_device: mt-core-01.gobcn.ca
@@ -266,21 +308,51 @@ nas_assignments:
     accounting_profile: default
 
     monitoring_profile: default
+```
 
+Move the `nas_device` value to the assignment key and remove the `nas_device` property:
+
+```yaml
+nas_assignments:
+
+  mt-core-01.gobcn.ca:
+
+    credential_profile: default
+
+    accounting_profile: default
+
+    monitoring_profile: default
+```
+
+The assignment key `mt-core-01.gobcn.ca` now directly identifies the Global NAS Device.
+
+### Trusted RADIUS Client Assignments
+
+Previously, a Trusted RADIUS Client Assignment used its own identifier and referenced a Trusted RADIUS Client using `trusted_radius_client`:
+
+```yaml
 trusted_radius_client_assignments:
 
-  sonar:
+  billing-system:
 
     trusted_radius_client: sonar
 
     credential_profile: default
 ```
 
-Relationship objects never duplicate configuration owned by other objects.
+Move the `trusted_radius_client` value to the assignment key and remove the `trusted_radius_client` property:
 
-Referenced objects must exist within the configuration.
+```yaml
+trusted_radius_client_assignments:
 
-An Accounting Profile's accounting policy applies to each NAS Assignment that references it.
+  sonar:
+
+    credential_profile: default
+```
+
+The assignment key `sonar` now directly identifies the Global Trusted RADIUS Client.
+
+Obsolete `nas_device` and `trusted_radius_client` assignment properties should be removed when migrating existing configurations. YAML decoding is currently non-strict, so obsolete properties may otherwise be ignored rather than reported directly.
 
 ---
 

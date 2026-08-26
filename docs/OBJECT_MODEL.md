@@ -399,30 +399,32 @@ Relationship Object
 
 ## Properties
 
-- nas_device
 - credential_profile
 - accounting_profile
 - monitoring_profile
+- require_message_authenticator (optional)
 
 ## Relationships
 
 References:
 
-- NAS Device
 - Credential Profile
 - Accounting Profile
 - Monitoring Profile
+
+The assignment key is the identifier of the referenced NAS Device.
 
 Owned by a Tenant.
 
 ## Validation
 
-- nas_device must be specified
 - credential_profile must be specified
 - accounting_profile must be specified
 - monitoring_profile must be specified
+- require_message_authenticator, when specified, must be `auto`, `yes`, or `no`
 - every referenced object must exist
-- duplicate assignments are not permitted
+
+The map key prevents the same NAS Device from being assigned more than once within a tenant.
 
 ## Generation
 
@@ -444,27 +446,31 @@ Relationship Object
 
 ## Properties
 
-- trusted_radius_client
 - credential_profile
+- require_message_authenticator (optional)
 
 ## Relationships
 
 References:
 
-- Trusted RADIUS Client
 - Credential Profile
+
+The assignment key is the identifier of the referenced Trusted RADIUS Client.
 
 Owned by a Tenant.
 
 ## Validation
 
-- trusted_radius_client must be specified
 - credential_profile must be specified
+- require_message_authenticator, when specified, must be `auto`, `yes`, or `no`
 - every referenced object must exist
-- duplicate assignments are not permitted
+
+The map key prevents the same Trusted RADIUS Client from being assigned more than once within a tenant.
 
 ## Generation
 
 Combines Trusted RADIUS Clients with Credential Profiles to render managed client definitions.
 
 Trusted RADIUS Client Assignments do not participate in CoA proxy configuration generation.
+
+For both assignment types, omitted `require_message_authenticator` means no directive is rendered. Explicit `auto`, `yes`, and `no` values render the corresponding FreeRADIUS client directive.

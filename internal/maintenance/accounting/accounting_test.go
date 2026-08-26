@@ -57,9 +57,9 @@ func TestRunnerClosesStaleSessionsUsingPerNASCutoff(t *testing.T) {
 	runner := Runner{DB: db, Now: func() time.Time { return now }}
 
 	policies := []generator.NASAccountingPolicy{
-		{NASAssignmentIdentifier: "nas-a", IPAddress: "172.16.160.3", StaleSessionTimeout: duration(20 * time.Minute)},
-		{NASAssignmentIdentifier: "nas-disabled", IPAddress: "172.16.160.4"},
-		{NASAssignmentIdentifier: "nas-b", IPAddress: "172.16.160.50", StaleSessionTimeout: duration(time.Hour)},
+		{NASDeviceIdentifier: "nas-a", IPAddress: "172.16.160.3", StaleSessionTimeout: duration(20 * time.Minute)},
+		{NASDeviceIdentifier: "nas-disabled", IPAddress: "172.16.160.4"},
+		{NASDeviceIdentifier: "nas-b", IPAddress: "172.16.160.50", StaleSessionTimeout: duration(time.Hour)},
 	}
 
 	result, err := runner.Run(context.Background(), policies)
@@ -87,7 +87,7 @@ func TestRunnerUsesAtomicIdempotentUpdate(t *testing.T) {
 	db := &fakeExecer{}
 	runner := Runner{DB: db, Now: func() time.Time { return time.Unix(0, 0) }}
 	_, err := runner.Run(context.Background(), []generator.NASAccountingPolicy{
-		{NASAssignmentIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
+		{NASDeviceIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
 	})
 	if err != nil {
 		t.Fatalf("Run returned error: %v", err)
@@ -118,10 +118,10 @@ func TestRunnerContinuesAfterIndependentPolicyFailure(t *testing.T) {
 	runner := Runner{DB: db, Now: func() time.Time { return time.Unix(1000, 0) }}
 
 	result, err := runner.Run(context.Background(), []generator.NASAccountingPolicy{
-		{NASAssignmentIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
-		{NASAssignmentIdentifier: "nas-b", IPAddress: "192.0.2.2", StaleSessionTimeout: duration(time.Minute)},
+		{NASDeviceIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
+		{NASDeviceIdentifier: "nas-b", IPAddress: "192.0.2.2", StaleSessionTimeout: duration(time.Minute)},
 	})
-	if err == nil || !strings.Contains(err.Error(), `NAS assignment "nas-a"`) {
+	if err == nil || !strings.Contains(err.Error(), `NAS device "nas-a"`) {
 		t.Fatalf("error = %v, want contextual first-policy error", err)
 	}
 	if len(db.calls) != 2 {
@@ -137,8 +137,8 @@ func TestRunnerReportsRowsAffectedFailureAndContinues(t *testing.T) {
 	runner := Runner{DB: db, Now: func() time.Time { return time.Unix(1000, 0) }}
 
 	result, err := runner.Run(context.Background(), []generator.NASAccountingPolicy{
-		{NASAssignmentIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
-		{NASAssignmentIdentifier: "nas-b", IPAddress: "192.0.2.2", StaleSessionTimeout: duration(time.Minute)},
+		{NASDeviceIdentifier: "nas-a", IPAddress: "192.0.2.1", StaleSessionTimeout: duration(time.Minute)},
+		{NASDeviceIdentifier: "nas-b", IPAddress: "192.0.2.2", StaleSessionTimeout: duration(time.Minute)},
 	})
 	if err == nil || !strings.Contains(err.Error(), "determine closed session count") {
 		t.Fatalf("error = %v, want rows-affected error", err)

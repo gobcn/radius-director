@@ -834,7 +834,6 @@ tenants:
       coa_port: 3799
     nas_assignments:
       router:
-        nas_device: router
         credential_profile: default
         accounting_profile: default
         monitoring_profile: default

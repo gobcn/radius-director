@@ -39,10 +39,8 @@ func validateTenantReferences(tenantIdentifier string, tenant model.Tenant, glob
 
 func validateNASAssignmentReferences(tenantIdentifier, identifier string, assignment model.NASAssignment, globalObjects model.GlobalObjects) []error {
 	var validationErrors []error
-	if assignment.NASDevice != "" {
-		if _, exists := globalObjects.NASDevices[assignment.NASDevice]; !exists {
-			validationErrors = append(validationErrors, fmt.Errorf("tenant %q: nas assignment %q: nas device %q does not exist", tenantIdentifier, identifier, assignment.NASDevice))
-		}
+	if _, exists := globalObjects.NASDevices[identifier]; !exists {
+		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: nas assignment %q: nas device %q does not exist", tenantIdentifier, identifier, identifier))
 	}
 	if assignment.CredentialProfile != "" {
 		if _, exists := globalObjects.CredentialProfiles[assignment.CredentialProfile]; !exists {
@@ -65,10 +63,8 @@ func validateNASAssignmentReferences(tenantIdentifier, identifier string, assign
 
 func validateTrustedRADIUSClientAssignmentReferences(tenantIdentifier, identifier string, assignment model.TrustedRADIUSClientAssignment, globalObjects model.GlobalObjects) []error {
 	var validationErrors []error
-	if assignment.TrustedRADIUSClient != "" {
-		if _, exists := globalObjects.TrustedRADIUSClients[assignment.TrustedRADIUSClient]; !exists {
-			validationErrors = append(validationErrors, fmt.Errorf("tenant %q: trusted radius client assignment %q: trusted radius client %q does not exist", tenantIdentifier, identifier, assignment.TrustedRADIUSClient))
-		}
+	if _, exists := globalObjects.TrustedRADIUSClients[identifier]; !exists {
+		validationErrors = append(validationErrors, fmt.Errorf("tenant %q: trusted radius client assignment %q: trusted radius client %q does not exist", tenantIdentifier, identifier, identifier))
 	}
 	if assignment.CredentialProfile != "" {
 		if _, exists := globalObjects.CredentialProfiles[assignment.CredentialProfile]; !exists {

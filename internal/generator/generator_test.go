@@ -22,8 +22,7 @@ func TestGenerateOneNASAssignmentCreatesOneClient(t *testing.T) {
 			"customer-a": {
 				Database: testDatabase("customer_a"),
 				NASAssignments: map[string]model.NASAssignment{
-					"core-router": {
-						NASDevice:         "core",
+					"core": {
 						CredentialProfile: "default",
 					},
 				},
@@ -39,7 +38,7 @@ func TestGenerateOneNASAssignmentCreatesOneClient(t *testing.T) {
 		t.Fatalf("tenant identifier = %q, want %q", got, want)
 	}
 	if got, want := generated.Tenants[0].FreeRADIUSClients, []FreeRADIUSClient{{
-		Identifier:   "core-router",
+		Identifier:   "core",
 		IPAddress:    "10.10.10.1",
 		SharedSecret: "shared-secret",
 		Vendor:       "mikrotik",
@@ -47,7 +46,7 @@ func TestGenerateOneNASAssignmentCreatesOneClient(t *testing.T) {
 		t.Fatalf("generated FreeRADIUS clients = %#v, want %#v", got, want)
 	}
 	if got, want := generated.Tenants[0].HomeServers, []HomeServer{{
-		Identifier:   "core-router",
+		Identifier:   "core",
 		IPAddress:    "10.10.10.1",
 		SharedSecret: "shared-secret",
 	}}; !reflect.DeepEqual(got, want) {
@@ -71,12 +70,10 @@ func TestGenerateMultipleNASAssignmentsCreatesMultipleClients(t *testing.T) {
 			"customer-a": {
 				Database: testDatabase("customer_a"),
 				NASAssignments: map[string]model.NASAssignment{
-					"edge-router": {
-						NASDevice:         "edge",
+					"edge": {
 						CredentialProfile: "edge-credentials",
 					},
-					"core-router": {
-						NASDevice:         "core",
+					"core": {
 						CredentialProfile: "core-credentials",
 					},
 				},
@@ -90,13 +87,13 @@ func TestGenerateMultipleNASAssignmentsCreatesMultipleClients(t *testing.T) {
 	}
 	if got, want := generated.Tenants[0].FreeRADIUSClients, []FreeRADIUSClient{
 		{
-			Identifier:   "core-router",
+			Identifier:   "core",
 			IPAddress:    "10.10.10.1",
 			SharedSecret: "core-secret",
 			Vendor:       "mikrotik",
 		},
 		{
-			Identifier:   "edge-router",
+			Identifier:   "edge",
 			IPAddress:    "10.10.10.2",
 			SharedSecret: "edge-secret",
 			Vendor:       "generic",
@@ -105,8 +102,8 @@ func TestGenerateMultipleNASAssignmentsCreatesMultipleClients(t *testing.T) {
 		t.Fatalf("generated FreeRADIUS clients = %#v, want %#v", got, want)
 	}
 	if got, want := generated.Tenants[0].HomeServers, []HomeServer{
-		{Identifier: "core-router", IPAddress: "10.10.10.1", SharedSecret: "core-secret"},
-		{Identifier: "edge-router", IPAddress: "10.10.10.2", SharedSecret: "edge-secret"},
+		{Identifier: "core", IPAddress: "10.10.10.1", SharedSecret: "core-secret"},
+		{Identifier: "edge", IPAddress: "10.10.10.2", SharedSecret: "edge-secret"},
 	}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("generated home servers = %#v, want %#v", got, want)
 	}
@@ -384,16 +381,14 @@ func TestGenerateTrustedRADIUSClientAssignments(t *testing.T) {
 		Tenants: map[string]model.Tenant{
 			"customer-a": {
 				NASAssignments: map[string]model.NASAssignment{
-					"core": {NASDevice: "core", CredentialProfile: "core-credentials"},
+					"core": {CredentialProfile: "core-credentials"},
 				},
 				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
 					"provisioning": {
-						TrustedRADIUSClient: "provisioning",
-						CredentialProfile:   "provisioning-credentials",
+						CredentialProfile: "provisioning-credentials",
 					},
 					"monitoring": {
-						TrustedRADIUSClient: "monitoring",
-						CredentialProfile:   "monitoring-credentials",
+						CredentialProfile: "monitoring-credentials",
 					},
 				},
 			},
@@ -524,9 +519,9 @@ func TestGenerateNASAccountingPolicies(t *testing.T) {
 		Tenants: map[string]model.Tenant{
 			"customer-a": {
 				NASAssignments: map[string]model.NASAssignment{
-					"gamma-router": {NASDevice: "gamma", AccountingProfile: "disabled"},
-					"alpha-router": {NASDevice: "alpha", AccountingProfile: "standard"},
-					"beta-router":  {NASDevice: "beta", AccountingProfile: "long"},
+					"gamma": {AccountingProfile: "disabled"},
+					"alpha": {AccountingProfile: "standard"},
+					"beta":  {AccountingProfile: "long"},
 				},
 			},
 		},
@@ -536,9 +531,9 @@ func TestGenerateNASAccountingPolicies(t *testing.T) {
 	standard := 20 * time.Minute
 	long := time.Hour
 	want := []NASAccountingPolicy{
-		{NASAssignmentIdentifier: "alpha-router", NASDeviceIdentifier: "alpha", IPAddress: "10.10.10.1", StaleSessionTimeout: &standard},
-		{NASAssignmentIdentifier: "beta-router", NASDeviceIdentifier: "beta", IPAddress: "10.10.10.2", StaleSessionTimeout: &long},
-		{NASAssignmentIdentifier: "gamma-router", NASDeviceIdentifier: "gamma", IPAddress: "10.10.10.3", StaleSessionTimeout: nil},
+		{NASDeviceIdentifier: "alpha", IPAddress: "10.10.10.1", StaleSessionTimeout: &standard},
+		{NASDeviceIdentifier: "beta", IPAddress: "10.10.10.2", StaleSessionTimeout: &long},
+		{NASDeviceIdentifier: "gamma", IPAddress: "10.10.10.3", StaleSessionTimeout: nil},
 	}
 	if got := generated.Tenants[0].AccountingPolicies; !reflect.DeepEqual(got, want) {
 		t.Fatalf("generated accounting policies = %#v, want %#v", got, want)
@@ -555,7 +550,7 @@ func TestGenerateTrustedRADIUSClientsDoNotCreateAccountingPolicies(t *testing.T)
 		Tenants: map[string]model.Tenant{
 			"customer-a": {
 				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
-					"sonar": {TrustedRADIUSClient: "sonar"},
+					"sonar": {},
 				},
 			},
 		},
@@ -621,5 +616,50 @@ func TestGenerateResolvesDeploymentProfileTemplate(t *testing.T) {
 
 	if got := generated.Tenants[0].Overlays[1]; got != "debug-logging" {
 		t.Fatalf("second tenant overlay = %q, want %q", got, "debug-logging")
+	}
+}
+
+func TestGeneratePreservesRequireMessageAuthenticator(t *testing.T) {
+	auto := model.RequireMessageAuthenticatorAuto
+	no := model.RequireMessageAuthenticatorNo
+	configuration := model.Configuration{
+		GlobalObjects: model.GlobalObjects{
+			CredentialProfiles: map[string]model.CredentialProfile{
+				"default": {SharedSecret: "secret"},
+			},
+			NASDevices: map[string]model.NASDevice{
+				"nas": {IPAddress: "10.10.10.1"},
+			},
+			TrustedRADIUSClients: map[string]model.TrustedRADIUSClient{
+				"trusted": {IPAddress: "10.10.10.2"},
+			},
+		},
+		Tenants: map[string]model.Tenant{
+			"customer-a": {
+				NASAssignments: map[string]model.NASAssignment{
+					"nas": {CredentialProfile: "default", RequireMessageAuthenticator: &auto},
+				},
+				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
+					"trusted": {CredentialProfile: "default", RequireMessageAuthenticator: &no},
+				},
+			},
+		},
+	}
+
+	clients := Generate(configuration).Tenants[0].FreeRADIUSClients
+	if got, want := *clients[0].RequireMessageAuthenticator, "auto"; got != want {
+		t.Fatalf("NAS require_message_authenticator = %q, want %q", got, want)
+	}
+	if got, want := *clients[1].RequireMessageAuthenticator, "no"; got != want {
+		t.Fatalf("trusted client require_message_authenticator = %q, want %q", got, want)
+	}
+
+	configuration.Tenants["customer-a"] = model.Tenant{
+		NASAssignments: map[string]model.NASAssignment{
+			"nas": {CredentialProfile: "default"},
+		},
+	}
+	if got := Generate(configuration).Tenants[0].FreeRADIUSClients[0].RequireMessageAuthenticator; got != nil {
+		t.Fatalf("omitted require_message_authenticator = %q, want nil", *got)
 	}
 }

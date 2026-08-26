@@ -300,3 +300,60 @@ func TestRenderWithOverlay(t *testing.T) {
 		t.Fatal("Render() did not produce overlay-test.conf")
 	}
 }
+
+func TestRenderClientsRequireMessageAuthenticator(t *testing.T) {
+	auto := "auto"
+	yes := "yes"
+	no := "no"
+
+	tests := []struct {
+		name     string
+		value    *string
+		contains string
+	}{
+		{name: "omitted", value: nil, contains: ""},
+		{name: "auto", value: &auto, contains: "require_message_authenticator = auto"},
+		{name: "yes", value: &yes, contains: "require_message_authenticator = yes"},
+		{name: "no", value: &no, contains: "require_message_authenticator = no"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tenant := generator.Tenant{
+				Template:     "default",
+				RADIUSServer: generator.RADIUSServer{Version: "3.2.10"},
+				FreeRADIUSClients: []generator.FreeRADIUSClient{{
+					Identifier:                  "client",
+					IPAddress:                   "10.10.10.1",
+					SharedSecret:                "secret",
+					RequireMessageAuthenticator: test.value,
+				}},
+			}
+
+			files, err := testRenderer(t).Render(tenant)
+			if err != nil {
+				t.Fatalf("Render() error = %v", err)
+			}
+
+			var content string
+			for _, file := range files {
+				if file.RelativePath == "clients.d/radius-director.conf" {
+					content = file.Content
+					break
+				}
+			}
+			if content == "" {
+				t.Fatal("Render() did not render clients.d/radius-director.conf")
+			}
+			if test.contains == "" {
+				if strings.Contains(content, "require_message_authenticator") {
+					t.Fatalf("rendered content unexpectedly contains require_message_authenticator:\n%s", content)
+				}
+				return
+			}
+			if !strings.Contains(content, test.contains) {
+				t.Fatalf("rendered content does not contain %q:\n%s", test.contains, content)
+			}
+		})
+	}
+}

@@ -68,7 +68,6 @@ func TestValidate(t *testing.T) {
 				},
 				NASAssignments: map[string]model.NASAssignment{
 					"core": {
-						NASDevice:         "core",
 						CredentialProfile: "default",
 						AccountingProfile: "default",
 						MonitoringProfile: "default",
@@ -85,7 +84,6 @@ func TestValidate(t *testing.T) {
 
 func TestValidateNASAssignment(t *testing.T) {
 	validAssignment := model.NASAssignment{
-		NASDevice:         "core",
 		CredentialProfile: "default",
 		AccountingProfile: "default",
 		MonitoringProfile: "default",
@@ -101,20 +99,8 @@ func TestValidateNASAssignment(t *testing.T) {
 			assignment: validAssignment,
 		},
 		{
-			name: "NAS Device missing",
-			assignment: model.NASAssignment{
-				CredentialProfile: validAssignment.CredentialProfile,
-				AccountingProfile: validAssignment.AccountingProfile,
-				MonitoringProfile: validAssignment.MonitoringProfile,
-			},
-			wantErrs: []string{
-				`tenant "customer-a": nas assignment "core": nas_device must be specified`,
-			},
-		},
-		{
 			name: "credential profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				AccountingProfile: validAssignment.AccountingProfile,
 				MonitoringProfile: validAssignment.MonitoringProfile,
 			},
@@ -125,7 +111,6 @@ func TestValidateNASAssignment(t *testing.T) {
 		{
 			name: "accounting profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				CredentialProfile: validAssignment.CredentialProfile,
 				MonitoringProfile: validAssignment.MonitoringProfile,
 			},
@@ -136,7 +121,6 @@ func TestValidateNASAssignment(t *testing.T) {
 		{
 			name: "monitoring profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				CredentialProfile: validAssignment.CredentialProfile,
 				AccountingProfile: validAssignment.AccountingProfile,
 			},
@@ -147,7 +131,6 @@ func TestValidateNASAssignment(t *testing.T) {
 		{
 			name: "multiple properties missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				MonitoringProfile: validAssignment.MonitoringProfile,
 			},
 			wantErrs: []string{
@@ -158,7 +141,6 @@ func TestValidateNASAssignment(t *testing.T) {
 		{
 			name: "all properties missing",
 			wantErrs: []string{
-				`tenant "customer-a": nas assignment "core": nas_device must be specified`,
 				`tenant "customer-a": nas assignment "core": credential_profile must be specified`,
 				`tenant "customer-a": nas assignment "core": accounting_profile must be specified`,
 				`tenant "customer-a": nas assignment "core": monitoring_profile must be specified`,
@@ -202,7 +184,6 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 		},
 	}
 	validAssignment := model.NASAssignment{
-		NASDevice:         "core",
 		CredentialProfile: "default",
 		AccountingProfile: "default",
 		MonitoringProfile: "default",
@@ -218,21 +199,8 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 			assignment: validAssignment,
 		},
 		{
-			name: "NAS Device missing",
-			assignment: model.NASAssignment{
-				NASDevice:         "missing-device",
-				CredentialProfile: validAssignment.CredentialProfile,
-				AccountingProfile: validAssignment.AccountingProfile,
-				MonitoringProfile: validAssignment.MonitoringProfile,
-			},
-			wantErrs: []string{
-				`tenant "customer-a": nas assignment "core": nas device "missing-device" does not exist`,
-			},
-		},
-		{
 			name: "credential profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				CredentialProfile: "missing-credential-profile",
 				AccountingProfile: validAssignment.AccountingProfile,
 				MonitoringProfile: validAssignment.MonitoringProfile,
@@ -244,7 +212,6 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 		{
 			name: "accounting profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				CredentialProfile: validAssignment.CredentialProfile,
 				AccountingProfile: "missing-accounting-profile",
 				MonitoringProfile: validAssignment.MonitoringProfile,
@@ -256,7 +223,6 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 		{
 			name: "monitoring profile missing",
 			assignment: model.NASAssignment{
-				NASDevice:         validAssignment.NASDevice,
 				CredentialProfile: validAssignment.CredentialProfile,
 				AccountingProfile: validAssignment.AccountingProfile,
 				MonitoringProfile: "missing-monitoring-profile",
@@ -268,26 +234,22 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 		{
 			name: "multiple references missing",
 			assignment: model.NASAssignment{
-				NASDevice:         "missing-device",
 				CredentialProfile: validAssignment.CredentialProfile,
 				AccountingProfile: "missing-accounting-profile",
 				MonitoringProfile: validAssignment.MonitoringProfile,
 			},
 			wantErrs: []string{
-				`tenant "customer-a": nas assignment "core": nas device "missing-device" does not exist`,
 				`tenant "customer-a": nas assignment "core": accounting profile "missing-accounting-profile" does not exist`,
 			},
 		},
 		{
 			name: "all references missing",
 			assignment: model.NASAssignment{
-				NASDevice:         "missing-device",
 				CredentialProfile: "missing-credential-profile",
 				AccountingProfile: "missing-accounting-profile",
 				MonitoringProfile: "missing-monitoring-profile",
 			},
 			wantErrs: []string{
-				`tenant "customer-a": nas assignment "core": nas device "missing-device" does not exist`,
 				`tenant "customer-a": nas assignment "core": credential profile "missing-credential-profile" does not exist`,
 				`tenant "customer-a": nas assignment "core": accounting profile "missing-accounting-profile" does not exist`,
 				`tenant "customer-a": nas assignment "core": monitoring profile "missing-monitoring-profile" does not exist`,
@@ -311,12 +273,79 @@ func TestValidateNASAssignmentReferences(t *testing.T) {
 	}
 }
 
+func TestValidateAssignmentObjectReferencesUseAssignmentKeys(t *testing.T) {
+	globals := model.GlobalObjects{
+		NASDevices:             map[string]model.NASDevice{},
+		TrustedRADIUSClients:   map[string]model.TrustedRADIUSClient{},
+		CredentialProfiles:     map[string]model.CredentialProfile{"default": {}},
+		AuthenticationProfiles: map[string]model.AuthenticationProfile{},
+		AccountingProfiles:     map[string]model.AccountingProfile{},
+		MonitoringProfiles:     map[string]model.MonitoringProfile{},
+	}
+
+	nasErrors := validateNASAssignmentReferences("customer-a", "missing-nas", model.NASAssignment{}, globals)
+	if len(nasErrors) == 0 || nasErrors[0].Error() != `tenant "customer-a": nas assignment "missing-nas": nas device "missing-nas" does not exist` {
+		t.Fatalf("NAS assignment errors = %v", nasErrors)
+	}
+
+	trustedErrors := validateTrustedRADIUSClientAssignmentReferences("customer-a", "missing-client", model.TrustedRADIUSClientAssignment{}, globals)
+	if len(trustedErrors) == 0 || trustedErrors[0].Error() != `tenant "customer-a": trusted radius client assignment "missing-client": trusted radius client "missing-client" does not exist` {
+		t.Fatalf("trusted RADIUS client assignment errors = %v", trustedErrors)
+	}
+}
+
+func TestValidateRequireMessageAuthenticator(t *testing.T) {
+	validValues := []model.RequireMessageAuthenticator{
+		model.RequireMessageAuthenticatorAuto,
+		model.RequireMessageAuthenticatorYes,
+		model.RequireMessageAuthenticatorNo,
+	}
+
+	for _, value := range validValues {
+		value := value
+		t.Run(string(value), func(t *testing.T) {
+			nasAssignment := model.NASAssignment{RequireMessageAuthenticator: &value}
+			if errs := validateNASAssignment("customer-a", "core", nasAssignment); len(errs) != 3 {
+				t.Fatalf("validateNASAssignment() errors = %v, want only the three required-profile errors", errs)
+			}
+
+			trustedAssignment := model.TrustedRADIUSClientAssignment{CredentialProfile: "default", RequireMessageAuthenticator: &value}
+			if errs := validateTrustedRADIUSClientAssignment("customer-a", "sonar", trustedAssignment); len(errs) != 0 {
+				t.Fatalf("validateTrustedRADIUSClientAssignment() errors = %v, want none", errs)
+			}
+		})
+	}
+
+	invalid := model.RequireMessageAuthenticator("sometimes")
+	for _, test := range []struct {
+		name string
+		errs []error
+	}{
+		{"NAS assignment", validateNASAssignment("customer-a", "core", model.NASAssignment{RequireMessageAuthenticator: &invalid})},
+		{"trusted RADIUS client assignment", validateTrustedRADIUSClientAssignment("customer-a", "sonar", model.TrustedRADIUSClientAssignment{CredentialProfile: "default", RequireMessageAuthenticator: &invalid})},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			found := false
+			for _, err := range test.errs {
+				if strings.Contains(err.Error(), "require_message_authenticator must be one of auto, yes, or no") {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatalf("errors = %v, want require_message_authenticator validation error", test.errs)
+			}
+		})
+	}
+}
+
 func TestValidateTenantRelationships(t *testing.T) {
 	globalObjects := model.GlobalObjects{
 		NASDevices: map[string]model.NASDevice{
-			"core":    {},
-			"edge":    {},
-			"gateway": {},
+			"core":  {},
+			"sonar": {},
+		},
+		TrustedRADIUSClients: map[string]model.TrustedRADIUSClient{
+			"sonar": {},
 		},
 	}
 
@@ -326,83 +355,36 @@ func TestValidateTenantRelationships(t *testing.T) {
 		wantErrs []string
 	}{
 		{
-			name: "no duplicates",
+			name: "distinct FreeRADIUS client names",
 			tenant: model.Tenant{
 				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "core"},
-					"assignment-b": {NASDevice: "edge"},
+					"core": {},
+				},
+				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
+					"sonar": {},
 				},
 			},
 		},
 		{
-			name: "one duplicate pair",
+			name: "cross-type generated client name collision",
 			tenant: model.Tenant{
 				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "core"},
-					"assignment-b": {NASDevice: "core"},
+					"sonar": {},
+				},
+				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
+					"sonar": {},
 				},
 			},
-			wantErrs: []string{
-				`tenant "customer-a": nas device "core" is assigned by both nas assignments "assignment-a" and "assignment-b"`,
-			},
+			wantErrs: []string{`tenant "customer-a": nas device "sonar" and trusted radius client "sonar" both generate FreeRADIUS client "sonar"`},
 		},
 		{
-			name: "multiple independent duplicates",
+			name: "missing referenced objects do not produce collision errors",
 			tenant: model.Tenant{
 				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "core"},
-					"assignment-b": {NASDevice: "core"},
-					"assignment-c": {NASDevice: "edge"},
-					"assignment-d": {NASDevice: "edge"},
+					"missing": {},
 				},
-			},
-			wantErrs: []string{
-				`tenant "customer-a": nas device "core" is assigned by both nas assignments "assignment-a" and "assignment-b"`,
-				`tenant "customer-a": nas device "edge" is assigned by both nas assignments "assignment-c" and "assignment-d"`,
-			},
-		},
-		{
-			name: "all duplicate assignments reported",
-			tenant: model.Tenant{
-				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "core"},
-					"assignment-b": {NASDevice: "core"},
-					"assignment-c": {NASDevice: "core"},
-				},
-			},
-			wantErrs: []string{
-				`tenant "customer-a": nas device "core" is assigned by both nas assignments "assignment-a" and "assignment-b"`,
-				`tenant "customer-a": nas device "core" is assigned by both nas assignments "assignment-a" and "assignment-c"`,
-			},
-		},
-		{
-			name: "duplicate mixed with valid assignments",
-			tenant: model.Tenant{
-				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "core"},
-					"assignment-b": {NASDevice: "core"},
-					"assignment-c": {NASDevice: "gateway"},
-				},
-			},
-			wantErrs: []string{
-				`tenant "customer-a": nas device "core" is assigned by both nas assignments "assignment-a" and "assignment-b"`,
-			},
-		},
-		{
-			name: "missing NAS Device does not produce relationship errors",
-			tenant: model.Tenant{
-				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {},
-					"assignment-b": {},
-				},
-			},
-		},
-		{
-			name: "nonexistent NAS Device does not produce relationship errors",
-			tenant: model.Tenant{
-				NASAssignments: map[string]model.NASAssignment{
-					"assignment-a": {NASDevice: "missing-device"},
-					"assignment-b": {NASDevice: "missing-device"},
+				TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
+					"missing": {},
 				},
 			},
 		},
@@ -585,7 +567,6 @@ func TestValidateTenant(t *testing.T) {
 		},
 		NASAssignments: map[string]model.NASAssignment{
 			"core": {
-				NASDevice:         "core",
 				CredentialProfile: "default",
 				AccountingProfile: "default",
 				MonitoringProfile: "default",
@@ -1245,24 +1226,12 @@ func TestValidateTrustedRADIUSClientAssignment(t *testing.T) {
 		{
 			name: "valid assignment",
 			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "monitoring",
-				CredentialProfile:   "default",
-			},
-		},
-		{
-			name: "trusted RADIUS client missing",
-			assignment: model.TrustedRADIUSClientAssignment{
 				CredentialProfile: "default",
 			},
-			wantErrs: []string{
-				`tenant "customer-a": trusted radius client assignment "monitoring": trusted_radius_client must be specified`,
-			},
 		},
 		{
-			name: "credential profile missing",
-			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "monitoring",
-			},
+			name:       "credential profile missing",
+			assignment: model.TrustedRADIUSClientAssignment{},
 			wantErrs: []string{
 				`tenant "customer-a": trusted radius client assignment "monitoring": credential_profile must be specified`,
 			},
@@ -1270,7 +1239,6 @@ func TestValidateTrustedRADIUSClientAssignment(t *testing.T) {
 		{
 			name: "all properties missing",
 			wantErrs: []string{
-				`tenant "customer-a": trusted radius client assignment "monitoring": trusted_radius_client must be specified`,
 				`tenant "customer-a": trusted radius client assignment "monitoring": credential_profile must be specified`,
 			},
 		},
@@ -1308,25 +1276,13 @@ func TestValidateTrustedRADIUSClientAssignmentReferences(t *testing.T) {
 		{
 			name: "valid references",
 			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "monitoring",
-				CredentialProfile:   "default",
-			},
-		},
-		{
-			name: "trusted RADIUS client missing",
-			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "missing-client",
-				CredentialProfile:   "default",
-			},
-			wantErrs: []string{
-				`tenant "customer-a": trusted radius client assignment "monitoring": trusted radius client "missing-client" does not exist`,
+				CredentialProfile: "default",
 			},
 		},
 		{
 			name: "credential profile missing",
 			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "monitoring",
-				CredentialProfile:   "missing-credentials",
+				CredentialProfile: "missing-credentials",
 			},
 			wantErrs: []string{
 				`tenant "customer-a": trusted radius client assignment "monitoring": credential profile "missing-credentials" does not exist`,
@@ -1335,11 +1291,9 @@ func TestValidateTrustedRADIUSClientAssignmentReferences(t *testing.T) {
 		{
 			name: "all references missing",
 			assignment: model.TrustedRADIUSClientAssignment{
-				TrustedRADIUSClient: "missing-client",
-				CredentialProfile:   "missing-credentials",
+				CredentialProfile: "missing-credentials",
 			},
 			wantErrs: []string{
-				`tenant "customer-a": trusted radius client assignment "monitoring": trusted radius client "missing-client" does not exist`,
 				`tenant "customer-a": trusted radius client assignment "monitoring": credential profile "missing-credentials" does not exist`,
 			},
 		},
@@ -1368,21 +1322,14 @@ func TestValidateTrustedRADIUSClientAssignmentRelationships(t *testing.T) {
 			"provisioning": {},
 		},
 	}
-	tenant := model.Tenant{
-		TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
-			"assignment-a": {TrustedRADIUSClient: "monitoring"},
-			"assignment-b": {TrustedRADIUSClient: "monitoring"},
-			"assignment-c": {TrustedRADIUSClient: "provisioning"},
-			"assignment-d": {TrustedRADIUSClient: "missing-client"},
-		},
-	}
+	tenant := model.Tenant{TrustedRADIUSClientAssignments: map[string]model.TrustedRADIUSClientAssignment{
+		"monitoring":   {},
+		"provisioning": {},
+	}}
 
 	validationErrors := validateTenantRelationships("customer-a", tenant, globalObjects)
-	if len(validationErrors) != 1 {
-		t.Fatalf("validateTenantRelationships() returned %d errors, want 1", len(validationErrors))
-	}
-	if got, want := validationErrors[0].Error(), `tenant "customer-a": trusted radius client "monitoring" is assigned by both trusted radius client assignments "assignment-a" and "assignment-b"`; got != want {
-		t.Errorf("validateTenantRelationships() error = %q, want %q", got, want)
+	if len(validationErrors) != 0 {
+		t.Fatalf("validateTenantRelationships() returned %v, want no errors", validationErrors)
 	}
 }
 

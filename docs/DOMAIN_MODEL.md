@@ -187,12 +187,13 @@ Represents how a tenant uses a NAS Device.
 
 A NAS Assignment is a Relationship Object that combines reusable Global Objects into tenant-specific managed configuration.
 
-Each NAS Assignment references:
+The NAS Assignment key is the identifier of its NAS Device. Each NAS Assignment references:
 
-- NAS Device
 - Credential Profile
 - Accounting Profile
 - Monitoring Profile
+
+It may optionally set `require_message_authenticator` to `auto`, `yes`, or `no`. When omitted, no corresponding FreeRADIUS directive is generated.
 
 Multiple tenants may reference the same NAS Device while applying different operational policies through separate NAS Assignments.
 
@@ -204,10 +205,11 @@ Represents how a tenant uses a Trusted RADIUS Client.
 
 A Trusted RADIUS Client Assignment is a Relationship Object that combines a Trusted RADIUS Client with the credentials required for it to communicate with the tenant's FreeRADIUS deployment.
 
-Each Trusted RADIUS Client Assignment references:
+The Trusted RADIUS Client Assignment key is the identifier of its Trusted RADIUS Client. Each Trusted RADIUS Client Assignment references:
 
-- Trusted RADIUS Client
 - Credential Profile
+
+It may optionally set `require_message_authenticator` to `auto`, `yes`, or `no`. When omitted, no corresponding FreeRADIUS directive is generated.
 
 Multiple tenants may reference the same Trusted RADIUS Client while using different Credential Profiles if required.
 
