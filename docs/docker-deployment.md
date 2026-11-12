@@ -242,6 +242,22 @@ The configuration file can have any filename. For example:
 /opt/radius-director/config/production.yaml
 ```
 
+## Deployment Profiles
+
+Each tenant references a deployment profile that selects a named template set and optional ordered overlays for its FreeRADIUS version. A profile can also list paths to remove from the effective FreeRADIUS configuration during deployment:
+
+```yaml
+global_objects:
+  deployment_profiles:
+    default:
+      template: default
+      overlays: []
+      remove:
+        - sites-enabled/inner-tunnel
+```
+
+Removal paths are recorded in the tenant's `.radius-director/manifest.yaml`. The deployment applies them to the effective configuration in the deployment environment; the generated tenant directory on the host is not modified. This can remove files supplied by the underlying FreeRADIUS distribution. See [template sets and overlays](adr/ADR-0008-named-template-sets-and-ordered-template-overlays.md) for details.
+
 ## Validate the Configuration
 
 Before generating the deployment, validate the configuration.
