@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/containerd/errdefs v1.0.0
-	github.com/go-sql-driver/mysql v1.10.0
+	github.com/go-sql-driver/mysql v1.10.2
 	github.com/moby/moby/api v1.55.0
 	github.com/moby/moby/client v0.5.1
 	gopkg.in/yaml.v3 v3.0.1
